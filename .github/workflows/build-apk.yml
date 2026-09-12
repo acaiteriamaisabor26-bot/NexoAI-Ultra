@@ -1,1 +1,42 @@
+name: Build Nexo AI APK
 
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Compilar APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar projeto
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Configurar Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Compilar APK Debug
+        working-directory: android
+        run: gradle assembleDebug --stacktrace
+
+      - name: Verificar APK
+        run: |
+          echo "APKs encontrados:"
+          find android -type f -name "*.apk" -print
+
+      - name: Publicar Nexo AI APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: NexoAI-Ultra-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 30
